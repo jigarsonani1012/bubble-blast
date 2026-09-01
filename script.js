@@ -1553,7 +1553,11 @@ function updateSoundUI() {
     musicBtn.setAttribute('aria-pressed', String(muted));
     if (musicSlider) {
         musicSlider.value = sliderValue;
-        musicSlider.style.background = track;
+        musicSlider.style.background = muted
+            ? 'linear-gradient(90deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.22) 100%)'
+            : track;
+        musicSlider.classList.toggle('slider-muted', muted);
+        musicSlider.disabled = muted;
     }
     if (menuSoundToggle) {
         menuSoundToggle.textContent = icon;
@@ -1563,7 +1567,11 @@ function updateSoundUI() {
     }
     if (menuSoundSlider) {
         menuSoundSlider.value = sliderValue;
-        menuSoundSlider.style.background = track;
+        menuSoundSlider.style.background = muted
+            ? 'linear-gradient(90deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.22) 100%)'
+            : track;
+        menuSoundSlider.classList.toggle('slider-muted', muted);
+        menuSoundSlider.disabled = muted;
     }
     menuSoundLabel.textContent = label;
 }
