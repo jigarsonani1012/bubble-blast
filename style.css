@@ -389,7 +389,7 @@ body {
 
 .slot-label {
     position: absolute;
-    bottom: -14px;
+    bottom: -16px;
     left: 50%;
     transform: translateX(-50%);
     color: rgba(90, 75, 150, 0.8);
@@ -517,6 +517,10 @@ body {
 .level-ov {
     gap: 14px;
     background: rgba(18, 16, 49, 0.72);
+    overflow-y: auto;       /* scroll if content overflows on small screens */
+    justify-content: flex-start;
+    padding-top: max(20px, 4vh);
+    padding-bottom: max(20px, 4vh);
 }
 
 .level-ov .ov-title {
@@ -527,7 +531,7 @@ body {
 
 .level-kicker {
     color: #fff6a1;
-    font-size: clamp(2.2rem, 8vw, 3.2rem);
+    font-size: clamp(1.8rem, 7vw, 3.2rem);
     font-weight: 900;
     text-shadow: 0 10px 26px rgba(255, 222, 96, 0.14);
     line-height: 1;
@@ -1184,7 +1188,7 @@ body {
         font-size: 0.6rem;
         padding-top: 0;
         flex-wrap: nowrap;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .topbar-center .stat {
@@ -1304,32 +1308,81 @@ body {
 }
 
 @media (max-width: 380px) {
+    #topbar {
+        padding: 4px 6px;
+        min-height: 38px;
+        gap: 4px;
+    }
+
     #topbar .brand {
-        font-size: 0.66rem;
+        font-size: 0.6rem;
+        flex: 0 0 auto;
     }
 
     .topbar-center {
-        font-size: 0.52rem;
-    }
-
-    .icon-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8rem;
-    }
-
-    .volume-slider {
-        width: 58px;
+        font-size: 0.5rem;
+        gap: 6px;
     }
 
     .topbar-center .stat .num {
-        font-size: 0.72rem;
+        font-size: 0.68rem;
+    }
+
+    .icon-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.78rem;
+    }
+
+    .volume-slider {
+        width: 48px;
     }
 
     #topbar .brand span {
-        display: inline-block;
-        font-size: 0.42rem;
-        opacity: 0.78;
+        display: none; /* hide subtitle to save space */
+    }
+}
+
+/* ─── VERY SMALL MOBILE (320px) ─── */
+@media (max-width: 340px) {
+    #topbar {
+        padding: 3px 5px;
+        min-height: 34px;
+        gap: 3px;
+    }
+
+    #topbar .brand {
+        font-size: 0.55rem;
+        flex: 0 0 auto;
+    }
+
+    .topbar-center {
+        font-size: 0.46rem;
+        gap: 4px;
+    }
+
+    .topbar-center .stat .num {
+        font-size: 0.62rem;
+    }
+
+    .topbar-center .stat .label {
+        font-size: 0.38rem;
+    }
+
+    /* Hide the slider entirely — keep only the mute icon button */
+    .volume-slider {
+        display: none;
+    }
+
+    .volume-control {
+        padding: 3px 5px;
+        gap: 0;
+    }
+
+    .icon-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.72rem;
     }
 }
 

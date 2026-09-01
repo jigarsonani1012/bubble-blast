@@ -424,15 +424,15 @@ function positionShooterCluster() {
     const swapArrow = document.getElementById('swap-arrow');
     const area = document.getElementById('game-area');
     const shortSide = Math.min(CW, CH);
-    const stacked = CW < 380 || CH < 520;
-    const curSize = Math.max(34, Math.min(stacked ? 58 : 72, Math.min(CW * 0.16, CH * 0.18, shortSide * 0.14)));
-    const nxtSize = Math.max(24, Math.min(stacked ? 40 : 50, Math.min(CW * 0.1, CH * 0.11, shortSide * 0.095)));
+    const stacked = false; // Always horizontal — never switch to vertical layout
+    const curSize = Math.max(34, Math.min(72, Math.min(CW * 0.16, CH * 0.18, shortSide * 0.14)));
+    const nxtSize = Math.max(24, Math.min(50, Math.min(CW * 0.1, CH * 0.11, shortSide * 0.095)));
     const swapSize = Math.max(22, Math.min(30, Math.min(CW * 0.06, CH * 0.075, shortSide * 0.06)));
     const gap = Math.max(8, Math.min(16, shortSide * 0.035));
-    const totalW = stacked ? Math.max(curSize, nxtSize, swapSize) : curSize + swapSize + nxtSize + gap * 2;
-    const totalH = stacked ? curSize + swapSize + nxtSize + gap * 2 : Math.max(curSize, nxtSize, swapSize);
+    const totalW = curSize + swapSize + nxtSize + gap * 2;
+    const totalH = Math.max(curSize, nxtSize, swapSize);
     const left = Math.max(BR * 0.25, CW / 2 - totalW / 2);
-    const bottom = Math.max(14, BR * 0.8);
+    const bottom = Math.max(24, BR * 0.8); // extra room so NEXT label isn't clipped
 
     cluster.classList.toggle('stacked', stacked);
     cluster.style.width = totalW + 'px';
