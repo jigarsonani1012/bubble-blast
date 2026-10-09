@@ -152,7 +152,7 @@ const PALETTE = [
     { fill: '#2a7fff', sh: '#c6ddff', dk: '#004bb5', glow: '#5a9aff' },
     { fill: '#2ed64a', sh: '#c6ffd0', dk: '#0f8f25', glow: '#5ae87a' },
     { fill: '#ffc800', sh: '#fff5c0', dk: '#c99a00', glow: '#ffd94a' },
-    { fill: '#db2777', sh: '#fbcfe8', dk: '#9d174d', glow: '#f472b6' },
+    { fill: '#8b3dff', sh: '#e4d2ff', dk: '#4c1d95', glow: '#a77bff' },
     { fill: '#22d3ee', sh: '#c8faff', dk: '#0891b2', glow: '#67e8f9' },
 ];
 
@@ -167,17 +167,19 @@ const BOMB_SPEC = { fill: '#10131f', sh: '#ffe58a', dk: '#05070c', glow: '#ffb52
 const bubbleSpriteCache = new Map();
 
 function isBombBubble(ci) { return ci === BOMB_BUBBLE; }
-function bubbleSpriteKey(ci, r) { return `${ci}|${Math.round(r * 2) / 2}`; }
+function bubbleSpriteKey(ci, r) { return `${ci}|${Math.round(r * 2) / 2}|${DPR}`; }
 
 // Build a canvas sprite for a bubble (with bomb or normal style)
+// Sprites are rendered at device pixel density so they stay sharp on high-DPI screens
 function buildBubbleSprite(ci, r) {
     const c = isBombBubble(ci) ? BOMB_SPEC : bubbleSpec(ci);
     const bomb = isBombBubble(ci);
     const size = Math.ceil(r * 3.4);
     const sprite = document.createElement('canvas');
-    sprite.width = size;
-    sprite.height = size;
+    sprite.width = Math.ceil(size * DPR);
+    sprite.height = Math.ceil(size * DPR);
     const sctx = sprite.getContext('2d');
+    sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     const half = size / 2;
     const R = r;
     const rim = Math.max(1.0, R * 0.04);
@@ -329,7 +331,8 @@ function drawBubble(ctx, x, y, r, ci, alpha = 1, scale = 1, rot = 0) {
     if (rot) ctx.rotate(rot);
     ctx.scale(scale, scale);
     ctx.globalAlpha = alpha;
-    ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
+    const w = sprite.width / DPR, h = sprite.height / DPR;
+    ctx.drawImage(sprite, -w / 2, -h / 2, w, h);
     ctx.restore();
 }
 
@@ -343,7 +346,7 @@ function darken(hex, amt) {
 }
 
 // ─── PERSISTENCE (Best Score) ────────────────────────────────
-const BEST_KEY = 'bb_best_v5';
+const BEST_KEY = 'bb_best';
 
 function loadBest() {
     try { return parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0; } catch (e) { return 0; }
@@ -386,6 +389,8 @@ const G = {
 
 // ─── CANVAS SETUP ──────────────────────────────────────────────
 let CW = 0, CH = 0, BR = 18, NCOLS = 10, OX = 0, OY_BASE = 0;
+// Device pixel ratio, capped to keep memory reasonable; bubbles are drawn at this density
+let DPR = Math.min(3, Math.max(1, window.devicePixelRatio || 1));
 let SHOOTER_TOP = 0, SHOOTER_X = 0, SHOOTER_Y = 0;
 
 
@@ -401,10 +406,16 @@ function setupCanvas() {
     const r = area.getBoundingClientRect();
     CW = Math.floor(r.width);
     CH = Math.floor(r.height);
-    canvas.width = CW;
-    canvas.height = CH;
-    aimCanvas.width = CW;
-    aimCanvas.height = CH;
+    DPR = Math.min(3, Math.max(1, window.devicePixelRatio || 1));
+    // Backing store is sized at device pixels; drawing still uses CSS-pixel coordinates
+    for (const cv of [canvas, aimCanvas]) {
+        cv.width = Math.round(CW * DPR);
+        cv.height = Math.round(CH * DPR);
+        cv.style.width = CW + 'px';
+        cv.style.height = CH + 'px';
+    }
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    aimCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
     const shortSide = Math.min(CW, CH);
     const targetBR = Math.max(9, Math.min(22, Math.min(CW * 0.036, CH * 0.034, shortSide * 0.032)));
@@ -896,15 +907,17 @@ function renderPreviews() {
     const curPx = Math.max(40, Math.round(document.getElementById('cur-ring').clientWidth || 58));
     const nxtPx = Math.max(34, Math.round(document.getElementById('slot-next').clientWidth || 44));
 
-    currentCanvas.width = curPx;
-    currentCanvas.height = curPx;
+    currentCanvas.width = Math.round(curPx * DPR);
+    currentCanvas.height = Math.round(curPx * DPR);
+    currentCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
     currentCtx.clearRect(0, 0, curPx, curPx);
     if (!G.shooting) {
         drawBubble(currentCtx, curPx / 2, curPx / 2, curPx * 0.36, G.cur, 1, G.loadSquash);
     }
 
-    nextCanvas.width = nxtPx;
-    nextCanvas.height = nxtPx;
+    nextCanvas.width = Math.round(nxtPx * DPR);
+    nextCanvas.height = Math.round(nxtPx * DPR);
+    nextCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
     nextCtx.clearRect(0, 0, nxtPx, nxtPx);
     drawBubble(nextCtx, nxtPx / 2, nxtPx / 2, nxtPx * 0.36, G.nxt, 1, 1);
 }
@@ -1294,7 +1307,10 @@ function scheduleGameOver(reason, delay = 0) {
 // Add score (with multiplier) and check for level-up
 function addScore(n) {
     G.score += Math.round(n * G.scoreMult);
-    if (G.score > G.best) G.best = G.score;
+    if (G.score > G.best) {
+        G.best = G.score;
+        saveBest(G.best);
+    }
     if (!G.leveling && !G.pendingLevel && G.score >= G.nextLevelAt) {
         G.pendingLevel = true;
     }
